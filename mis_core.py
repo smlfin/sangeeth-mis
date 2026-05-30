@@ -6,18 +6,12 @@
 #  MIS 3 : Net for the Month  (MIS 1 Instalment − MIS 2 Amount)
 #  MIS 4 : Deposit Outstanding Comparison (prev-month-end vs today)
 #
-#  All automation runs headless in background threads.
-#  User sees only the Tkinter dashboard window.
-#
-#  HOW TO RUN:
-#    python mis_dashboard.py
+#  Core scraping logic (no GUI). Used by app.py (Streamlit) and snap1.py (desktop).
 # ============================================================
 
 from datetime import datetime, date
 from calendar import monthrange
 import pandas as pd
-import tkinter as tk
-import threading
 import re
 import os
 
