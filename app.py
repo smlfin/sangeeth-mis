@@ -81,6 +81,13 @@ st.set_page_config(
 
 apply_secrets()
 
+if sys.version_info >= (3, 13):
+    st.error(
+        f"This app requires Python 3.11 or 3.12 (you are on {sys.version.split()[0]}). "
+        "On Streamlit Cloud: delete the app, redeploy, and in **Advanced settings** choose Python **3.12**."
+    )
+    st.stop()
+
 st.title("Sangeeth MIS Workspace")
 st.caption(
     "RD active accounts, monthly closing, net for the month, and deposit outstanding comparison."

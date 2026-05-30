@@ -102,6 +102,21 @@ This gives you a public URL like `https://your-app.streamlit.app`.
 
 Push the latest code from this repo. Playwright is **not** installed during the Cloud build anymore; it installs on the first **Generate MIS** click inside the running app.
 
+### If deploy hangs at “Spinning up manager process…” (10+ minutes)
+
+Your logs may show **Python 3.14**. That version is too new for most Streamlit apps and the manager often never starts.
+
+**Fix: delete the app and redeploy with Python 3.12**
+
+1. [share.streamlit.io](https://share.streamlit.io) → open the app → **⋮** → **Delete app**
+2. **Create app** again → repo `smlfin/sangeeth-mis`, branch `main`, file `app.py`
+3. Click **Advanced settings**
+4. **Python version:** choose **3.12** (or **3.11**) — **not 3.14**
+5. Paste **Secrets** (username/password)
+6. **Deploy**
+
+Build should finish in a few minutes. If logs still show Python 3.14, the wrong version was selected in step 4.
+
 ### Important limitations
 
 - The Sangeeth server must be **reachable from where the app runs**. Office/private IPs (e.g. `202.21.37.x`) usually work only on your LAN — run Streamlit on a PC inside that network, or use VPN.
