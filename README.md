@@ -54,13 +54,31 @@ python snap1.py
 
 This gives you a public URL like `https://your-app.streamlit.app`.
 
-1. **Push this folder to GitHub** (private repo recommended — no passwords in code).
+1. **Create an empty repo on GitHub** (do not add README/license — you already have code locally).
+
+   - Open [github.com/new](https://github.com/new)
+   - Name it e.g. `sangeeth-mis`
+   - Choose **Private** if you prefer
+   - Click **Create repository**
+
+2. **Connect and push** — replace `YOUR_GITHUB_USERNAME` with your real GitHub username:
 
    ```bash
-   git init
-   git add .
-   git commit -m "Initial Sangeeth MIS app"
-   git remote add origin https://github.com/YOUR_USER/sangeeth-mis.git
+   git remote add origin https://github.com/YOUR_GITHUB_USERNAME/sangeeth-mis.git
+   git branch -M main
+   git push -u origin main
+   ```
+
+   Example: if your username is `johndoe`, use  
+   `https://github.com/johndoe/sangeeth-mis.git`
+
+   If you see `Repository not found`, the repo does not exist yet on GitHub, or the URL username/repo name is wrong.
+
+   To fix a wrong remote:
+
+   ```bash
+   git remote remove origin
+   git remote add origin https://github.com/YOUR_GITHUB_USERNAME/sangeeth-mis.git
    git push -u origin main
    ```
 
@@ -78,6 +96,16 @@ This gives you a public URL like `https://your-app.streamlit.app`.
 
 5. Share the app URL with colleagues.
 
+### If deploy fails with “installer returned a non-zero exit code”
+
+1. In Streamlit Cloud → your app → **Settings** → **Advanced settings** (or **Secrets / Environment**).
+2. Add a **build/runtime environment variable**:
+   - Name: `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD`
+   - Value: `1`
+3. **Reboot** the app, then push the latest code from this repo (`main` branch).
+
+This skips downloading Chromium during `pip install` (browsers install on first **Generate MIS** instead).
+
 ### Important limitations
 
 - The Sangeeth server must be **reachable from where the app runs**. Office/private IPs (e.g. `202.21.37.x`) usually work only on your LAN — run Streamlit on a PC inside that network, or use VPN.
@@ -92,7 +120,7 @@ mis_core.py         # Scraping & MIS logic
 mis_views.py        # Streamlit dashboard sections
 snap1.py            # Desktop Tkinter UI
 requirements.txt
-packages.txt        # Linux libs for Playwright on Streamlit Cloud
+.python-version     # Python 3.11 for Streamlit Cloud
 .streamlit/         # Theme & secrets example
 ```
 

@@ -30,12 +30,14 @@ def apply_secrets():
 
 @st.cache_resource(show_spinner="Installing Playwright Chromium (first run only)...")
 def ensure_playwright_browser():
+    env = {**os.environ, "PLAYWRIGHT_BROWSERS_PATH": "0"}
     try:
         subprocess.run(
             [sys.executable, "-m", "playwright", "install", "chromium"],
             check=True,
             capture_output=True,
             timeout=600,
+            env=env,
         )
         return True
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
