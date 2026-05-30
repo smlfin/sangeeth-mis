@@ -100,7 +100,11 @@ This gives you a public URL like `https://your-app.streamlit.app`.
 
 ### If deploy fails with “installer returned a non-zero exit code”
 
-Push the latest code from this repo. Playwright is **not** installed during the Cloud build anymore; it installs on the first **Generate MIS** click inside the running app.
+Push the latest code. Dependencies install via `requirements.txt` (`-e .` + `setup.py`). `packages.txt` adds Linux libraries for Chromium. Do not put `#` comment lines in `packages.txt`.
+
+### If “Playwright package install failed” at runtime
+
+Runtime `pip install` does not work on Community Cloud. Pull the latest code: Playwright is installed at **build** time; only Chromium downloads when you click **Generate MIS** (first time may take a few minutes).
 
 ### If deploy hangs at “Spinning up manager process…” (10+ minutes)
 

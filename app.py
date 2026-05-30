@@ -13,38 +13,10 @@ import os
 import subprocess
 import sys
 
-import importlib.util
-
 import streamlit as st
 
 import mis_core as mc
 from mis_views import render_full_dashboard
-
-
-@st.cache_resource(show_spinner="Installing Playwright package (first run)...")
-def ensure_playwright_package():
-    """Install Playwright at runtime (avoids Cloud build failure from browser download)."""
-    if importlib.util.find_spec("playwright") is not None:
-        return True
-    env = {**os.environ, "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "1"}
-    try:
-        subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "pip",
-                "install",
-                "playwright==1.49.1",
-                "--quiet",
-            ],
-            check=True,
-            capture_output=True,
-            timeout=300,
-            env=env,
-        )
-        return True
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-        return str(exc)
 
 
 def apply_secrets():
@@ -56,20 +28,21 @@ def apply_secrets():
     mc.reload_config()
 
 
-@st.cache_resource(show_spinner="Installing Playwright Chromium (first run only)...")
+@st.cache_resource(show_spinner="Downloading Chromium for automation (first run, ~2–5 min)...")
 def ensure_playwright_browser():
-    env = {**os.environ, "PLAYWRIGHT_BROWSERS_PATH": "0"}
     try:
-        subprocess.run(
+        result = subprocess.run(
             [sys.executable, "-m", "playwright", "install", "chromium"],
-            check=True,
             capture_output=True,
+            text=True,
             timeout=600,
-            env=env,
         )
-        return True
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-        return str(exc)
+        if result.returncode == 0:
+            return True
+        detail = (result.stderr or result.stdout or "").strip()
+        return detail or f"exit code {result.returncode}"
+    except subprocess.TimeoutExpired:
+        return "Chromium download timed out after 10 minutes. Try Reboot app and run again."
 
 
 st.set_page_config(
@@ -159,13 +132,18 @@ if generate:
         except ValueError as err:
             st.error(str(err))
         else:
-            pkg_msg = ensure_playwright_package()
-            if pkg_msg is not True:
-                st.error(f"Playwright package install failed: {pkg_msg}")
+            try:
+                import playwright  # noqa: F401
+            except ImportError:
+                st.error(
+                    "Playwright is not installed. Push the latest code and wait for "
+                    "Streamlit to finish redeploying (playwright must be in requirements.txt)."
+                )
             else:
                 browser_msg = ensure_playwright_browser()
                 if browser_msg is not True:
-                    st.error(f"Playwright browser install failed: {browser_msg}")
+                    st.error("Chromium install failed:")
+                    st.code(browser_msg)
                 else:
                     mc.state.prepare_run(dates)
                     with st.spinner("Running MIS pipeline — this may take several minutes..."):
