@@ -13,10 +13,38 @@ import os
 import subprocess
 import sys
 
+import importlib.util
+
 import streamlit as st
 
 import mis_core as mc
 from mis_views import render_full_dashboard
+
+
+@st.cache_resource(show_spinner="Installing Playwright package (first run)...")
+def ensure_playwright_package():
+    """Install Playwright at runtime (avoids Cloud build failure from browser download)."""
+    if importlib.util.find_spec("playwright") is not None:
+        return True
+    env = {**os.environ, "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "1"}
+    try:
+        subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "playwright==1.49.1",
+                "--quiet",
+            ],
+            check=True,
+            capture_output=True,
+            timeout=300,
+            env=env,
+        )
+        return True
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+        return str(exc)
 
 
 def apply_secrets():
@@ -124,17 +152,21 @@ if generate:
         except ValueError as err:
             st.error(str(err))
         else:
-            browser_msg = ensure_playwright_browser()
-            if browser_msg is not True:
-                st.error(f"Playwright browser install failed: {browser_msg}")
+            pkg_msg = ensure_playwright_package()
+            if pkg_msg is not True:
+                st.error(f"Playwright package install failed: {pkg_msg}")
             else:
-                mc.state.prepare_run(dates)
-                with st.spinner("Running MIS pipeline — this may take several minutes..."):
-                    mc.background_workflow()
-                if mc.state.is_done and not mc.state.error_msg:
-                    st.session_state["mis_ready"] = True
-                elif mc.state.error_msg:
-                    st.session_state.pop("mis_ready", None)
+                browser_msg = ensure_playwright_browser()
+                if browser_msg is not True:
+                    st.error(f"Playwright browser install failed: {browser_msg}")
+                else:
+                    mc.state.prepare_run(dates)
+                    with st.spinner("Running MIS pipeline — this may take several minutes..."):
+                        mc.background_workflow()
+                    if mc.state.is_done and not mc.state.error_msg:
+                        st.session_state["mis_ready"] = True
+                    elif mc.state.error_msg:
+                        st.session_state.pop("mis_ready", None)
 
 if st.session_state.get("mis_ready") and mc.state.is_done:
     st.divider()

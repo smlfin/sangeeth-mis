@@ -13,7 +13,6 @@
 #    python mis_dashboard.py
 # ============================================================
 
-from playwright.sync_api import sync_playwright
 from datetime import datetime, date
 from calendar import monthrange
 import pandas as pd
@@ -602,6 +601,8 @@ def background_workflow():
         state.running = False
         return
     try:
+        from playwright.sync_api import sync_playwright
+
         with sync_playwright() as p:
             state.status = "Launching quiet automation instance..."
             browser = p.chromium.launch(headless=True, slow_mo=100)

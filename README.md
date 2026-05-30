@@ -86,7 +86,7 @@ This gives you a public URL like `https://your-app.streamlit.app`.
 
 3. **New app** → select your repo → **Main file path:** `app.py` → Deploy.
 
-4. **App settings → Secrets** — paste (from `.streamlit/secrets.toml.example`):
+4. **App settings → Secrets** (there is no separate “Environment variables” page on Community Cloud). Paste:
 
    ```toml
    SANGEETH_BASE_URL = "http://202.21.37.156/Sangeeth/"
@@ -94,17 +94,13 @@ This gives you a public URL like `https://your-app.streamlit.app`.
    SANGEETH_PASSWORD = "your_password"
    ```
 
+   Save — the app reboots. Credentials are read via `st.secrets` / `os.environ` in the app.
+
 5. Share the app URL with colleagues.
 
 ### If deploy fails with “installer returned a non-zero exit code”
 
-1. In Streamlit Cloud → your app → **Settings** → **Advanced settings** (or **Secrets / Environment**).
-2. Add a **build/runtime environment variable**:
-   - Name: `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD`
-   - Value: `1`
-3. **Reboot** the app, then push the latest code from this repo (`main` branch).
-
-This skips downloading Chromium during `pip install` (browsers install on first **Generate MIS** instead).
+Push the latest code from this repo. Playwright is **not** installed during the Cloud build anymore; it installs on the first **Generate MIS** click inside the running app.
 
 ### Important limitations
 
